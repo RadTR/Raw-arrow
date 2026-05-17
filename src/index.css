@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Archivo", sans-serif;
+  --color-raw-yellow: #D4AF37;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
