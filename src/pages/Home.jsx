@@ -1,23 +1,91 @@
-import React from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import CategoriesSection from '../components/CategoriesSection';
+import ChooseByFitSection from '../components/ChooseByFitSection';
+import DenimCanvas from '../components/DenimCanvas';
+import FloatingJean from '../components/FloatingJean';
+import NowTrendingSection from '../components/NowTrendingSection';
+import StoriesSection from '../components/StoriesSection';
 import { products } from '../data/products';
 import { X } from 'lucide-react';
+
+function usePrefersReducedMotion() {
+  const [prefersReduced, setPrefersReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReduced(media.matches);
+
+    const handleChange = () => setPrefersReduced(media.matches);
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
+
+  return prefersReduced;
+}
+
+function CountStat({ target, suffix = "", label }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!isInView) return undefined;
+
+    const step = Math.max(1, Math.ceil(target / 30));
+    const interval = setInterval(() => {
+      setValue((current) => {
+        const next = Math.min(target, current + step);
+        if (next === target) clearInterval(interval);
+        return next;
+      });
+    }, 35);
+
+    return () => clearInterval(interval);
+  }, [isInView, target]);
+
+  return (
+    <div ref={ref}>
+      <div className="font-heading text-3xl font-black text-raw-yellow">
+        {value}{suffix}
+      </div>
+      <div className="mt-1 text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function StaticStat({ value, label }) {
+  return (
+    <div>
+      <div className="font-heading text-3xl font-black text-raw-yellow">
+        {value}
+      </div>
+      <div className="mt-1 text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+        {label}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const heroImage = products.length > 2 ? products[2].image : products[0].image;
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 1000], [0, 300]);
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
+  const prefersReduced = usePrefersReducedMotion();
+  const [selectedMilestone, setSelectedMilestone] = useState(null);
 
   const milestones = [
-    { year: "2023", title: "Concept", desc: "RawArrow begins as a Tunisian denim concept built around sharp cuts and local streetwear energy." },
-    { year: "2024", title: "First Stitches", desc: "Initial denim samples created, testing structure, fit, and signature yellow detailing." },
-    { year: "2024", title: "Local Campaign", desc: "First editorial photoshoot built around Tunisian city movement and raw denim texture." },
-    { year: "2025", title: "Online Launch", desc: "RawArrow moves into a digital storefront with product drops, size guides, and direct customer orders." },
-    { year: "2026", title: "Signature Fit System", desc: "The brand starts building its own fit language: straight, tapered, loose, stacked, and utility denim." },
-    { year: "Future", title: "X Marks Forward", desc: "RawArrow expands beyond jeans into a full premium streetwear direction." }
+    { year: "2023", title: "Concept", desc: "RawArrow begins as a Tunisian denim concept built around sharp cuts and local streetwear energy.", notes: ["Moodboards built around Tunis streets, workwear utility, and washed grey denim.", "The yellow stitch becomes the first recognizable brand signal."], design: "Early direction focused on a straight jean, sharp pocket lines, and a minimal RAW mark.", image: products[0].image },
+    { year: "2024", title: "First Stitches", desc: "Initial denim samples created, testing structure, fit, and signature yellow detailing.", notes: ["First fit samples explore straight, tapered, loose, and stacked proportions.", "Hardware and pocket reinforcement are tested for daily wear."], design: "The collection starts moving away from generic denim into a clearer RawArrow fit language.", image: products[1].image },
+    { year: "2024", title: "Local Campaign", desc: "First editorial photoshoot built around Tunisian city movement and raw denim texture.", notes: ["Campaign direction uses night streets, concrete textures, and movement.", "Product photography starts treating denim as a hero object."], design: "The brand tone becomes more editorial: minimal layouts, strong type, and fabric-first visuals.", image: products[2].image },
+    { year: "2025", title: "Online Launch", desc: "RawArrow moves into a digital storefront with product drops, size guides, and direct customer orders.", notes: ["The store structure expands into categories, cart, checkout, and editorial content.", "Product details gain material, care, model sizing, and stock language."], design: "The site becomes a functional ecommerce-style experience while keeping a premium visual system.", image: products[3].image },
+    { year: "2026", title: "Signature Fit System", desc: "The brand starts building its own fit language: straight, tapered, loose, stacked, and utility denim.", notes: ["Fit guide cards explain silhouettes before customers choose products.", "Denim becomes the organizing system for future tees, hoodies, caps, and accessories."], design: "RawArrow moves toward a full denim/streetwear platform with a recognizable fit vocabulary.", image: products[4].image },
+    { year: "Future", title: "X Marks Forward", desc: "RawArrow expands beyond jeans into a full premium streetwear direction.", notes: ["Accessories, deeper campaigns, and stronger account/order tooling are planned.", "The X marker becomes a forward-facing symbol for future drops."], design: "The brand grows from storefront to culture: products, stories, fit education, and local identity.", image: products[8].image }
   ];
 
   return (
@@ -25,6 +93,7 @@ export default function Home() {
       
       {/* 1. Cinematic Hero Section */}
       <section className="snap-start relative h-screen min-h-[700px] w-full overflow-hidden bg-black">
+        <DenimCanvas />
         <motion.div 
           className="absolute inset-0"
           style={{ y: heroY, opacity: heroOpacity }}
@@ -38,6 +107,7 @@ export default function Home() {
         </motion.div>
         
         <div className="relative z-10 mx-auto flex h-full max-w-screen-2xl flex-col justify-end px-5 pb-32 lg:px-10">
+          <FloatingJean className="-right-24 top-[32%] h-80 w-56 -translate-y-1/2 opacity-25 sm:-right-16 sm:h-96 sm:w-64 md:opacity-35 lg:right-4 lg:top-1/2 lg:h-[32rem] lg:w-[22rem] lg:opacity-90 xl:right-12 xl:h-[36rem] xl:w-[25rem]" />
           <motion.div 
             initial={{ opacity: 0, y: 30 }} 
             animate={{ opacity: 1, y: 0 }} 
@@ -50,10 +120,16 @@ export default function Home() {
             <p className="mt-8 max-w-md text-sm font-medium leading-relaxed text-neutral-300 sm:text-base">
               Precision-cut denim engineered for the modern silhouette. Sharp, uncompromising, and distinctly Raw Arrow.
             </p>
+            <motion.div
+              className="mt-8 h-px bg-gradient-to-r from-raw-yellow to-transparent"
+              initial={{ width: 0 }}
+              animate={{ width: "12rem" }}
+              transition={{ duration: 1.2, delay: 1 }}
+            />
             <div className="mt-10 flex gap-4">
-              <a href="#collection" className="inline-flex h-14 items-center justify-center bg-white px-10 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-raw-yellow hover:text-black">
+              <Link to="/collection" className="inline-flex h-14 items-center justify-center bg-white px-10 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-raw-yellow hover:text-black">
                 Shop Collection
-              </a>
+              </Link>
               <a href="#story" className="inline-flex h-14 items-center justify-center border border-white/30 px-10 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm transition-colors hover:border-raw-yellow hover:text-raw-yellow">
                 The Journey
               </a>
@@ -69,16 +145,36 @@ export default function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
-          className="mb-16 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end"
+          className="mb-16 flex flex-col items-start justify-between gap-10 md:flex-row md:items-end"
         >
           <div>
             <div className="mb-4 inline-block h-1 w-12 bg-raw-yellow"></div>
             <h2 className="font-heading text-4xl font-bold uppercase tracking-tight text-black dark:text-white transition-colors">New Arrivals</h2>
             <p className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">Latest drops from the core collection.</p>
+            <div className="mt-10 flex flex-wrap gap-8 sm:gap-12">
+              <CountStat target={4} label="Drops" />
+              <CountStat target={100} suffix="%" label="Denim" />
+              <StaticStat value="Made" label="in Tunisia" />
+            </div>
           </div>
-          <Link to="/#collection" className="text-xs font-bold uppercase tracking-widest text-black underline decoration-raw-yellow decoration-2 underline-offset-8 dark:text-white transition-all hover:text-raw-yellow dark:hover:text-raw-yellow">
-            View All
-          </Link>
+          <div className="flex items-end gap-8">
+            <motion.div
+              className="hidden h-40 w-32 origin-center overflow-hidden border border-neutral-200 bg-neutral-100 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 md:block"
+              animate={prefersReduced ? { rotateY: 0 } : { rotateY: [0, 10, 0, -10, 0] }}
+              transition={prefersReduced ? { duration: 0 } : { duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              style={{ transformPerspective: 700 }}
+              aria-hidden="true"
+            >
+              <img
+                src={products[1].image}
+                alt=""
+                className="h-full w-full object-cover grayscale transition-all duration-700 hover:grayscale-0"
+              />
+            </motion.div>
+            <Link to="/collection" className="text-xs font-bold uppercase tracking-widest text-black underline decoration-raw-yellow decoration-2 underline-offset-8 dark:text-white transition-all hover:text-raw-yellow dark:hover:text-raw-yellow">
+              View All
+            </Link>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
@@ -95,6 +191,11 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <CategoriesSection />
+      <ChooseByFitSection />
+      <NowTrendingSection />
+      <StoriesSection />
 
       {/* 3. Story / Roadmap Section */}
       <section id="story" className="snap-start relative border-t border-neutral-200 dark:border-neutral-900 bg-[#fbfbfb] dark:bg-[#0a0a0a] transition-colors duration-300">
@@ -145,7 +246,12 @@ export default function Home() {
 
                   {/* Content Card */}
                   <div className="ml-12 w-full lg:ml-0">
-                    <div className="group relative border border-neutral-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-raw-yellow hover:shadow-[0_0_40px_-10px_rgba(212,175,55,0.2)] dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-raw-yellow">
+                    <motion.div
+                      whileHover={{ rotateX: -3, rotateY: 5, z: 10 }}
+                      style={{ transformPerspective: 800 }}
+                      onClick={() => setSelectedMilestone(milestone)}
+                      className="group relative border border-neutral-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-raw-yellow hover:shadow-[0_0_40px_-10px_rgba(212,175,55,0.2)] dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-raw-yellow"
+                    >
                       <span className="mb-2 block font-heading text-3xl font-black text-raw-yellow/20 transition-colors group-hover:text-raw-yellow">
                         {milestone.year}
                       </span>
@@ -155,7 +261,8 @@ export default function Home() {
                       <p className="text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                         {milestone.desc}
                       </p>
-                    </div>
+                      <p className="mt-5 text-[10px] font-bold uppercase tracking-widest text-raw-yellow">Read milestone</p>
+                    </motion.div>
                   </div>
                 </motion.div>
               ))}
@@ -179,6 +286,55 @@ export default function Home() {
 
         </div>
       </section>
+
+      <AnimatePresence>
+        {selectedMilestone && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[80] bg-black/70 p-4 backdrop-blur-md"
+            onClick={() => setSelectedMilestone(null)}
+          >
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.35, ease: "circOut" }}
+              onClick={(event) => event.stopPropagation()}
+              className="ml-auto flex h-full w-full max-w-xl flex-col overflow-y-auto bg-white p-6 shadow-2xl dark:bg-neutral-950 lg:p-10"
+            >
+              <button onClick={() => setSelectedMilestone(null)} className="mb-8 ml-auto rounded-full bg-neutral-100 p-2 text-black transition-colors hover:bg-raw-yellow dark:bg-neutral-900 dark:text-white dark:hover:text-black">
+                <X size={20} />
+              </button>
+              <img src={selectedMilestone.image} alt="" className="aspect-[4/3] w-full object-cover grayscale" />
+              <p className="mt-8 font-heading text-5xl font-black text-raw-yellow/40">{selectedMilestone.year}</p>
+              <h2 className="mt-2 font-heading text-3xl font-bold uppercase tracking-tight text-black dark:text-white">
+                {selectedMilestone.title}
+              </h2>
+              <p className="mt-5 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                {selectedMilestone.desc}
+              </p>
+              <div className="mt-8 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-black dark:text-white">Milestone Notes</h3>
+                <ul className="mt-4 space-y-3">
+                  {selectedMilestone.notes.map((note) => (
+                    <li key={note} className="border-l-2 border-raw-yellow pl-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-8 border border-neutral-200 bg-[#f8f7f3] p-5 dark:border-neutral-800 dark:bg-neutral-900">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-raw-yellow">Campaign / Design Notes</h3>
+                <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+                  {selectedMilestone.design}
+                </p>
+              </div>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </main>
   );

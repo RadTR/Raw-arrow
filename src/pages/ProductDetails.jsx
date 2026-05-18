@@ -34,6 +34,10 @@ export default function ProductDetails() {
   }
 
   const handleAddToCart = () => {
+    if (!product.stock) {
+      setError("This item is not available yet.");
+      return;
+    }
     if (!selectedSize) {
       setError("Please select a size first.");
       return;
@@ -43,6 +47,10 @@ export default function ProductDetails() {
   };
 
   const handleBuyNow = () => {
+    if (!product.stock) {
+      setError("This item is not available yet.");
+      return;
+    }
     if (!selectedSize) {
       setError("Please select a size before buying.");
       return;
@@ -56,7 +64,7 @@ export default function ProductDetails() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="mx-auto max-w-screen-2xl px-5 py-10 lg:px-10 lg:py-16"
+      className="mx-auto max-w-screen-2xl px-5 py-10 pb-28 lg:px-10 lg:py-16"
     >
       <Link to="/" className="mb-10 inline-flex items-center text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors">
         <ChevronLeft size={16} className="mr-2" /> Back to collection
@@ -114,6 +122,9 @@ export default function ProductDetails() {
                   </button>
                 ))}
               </div>
+              {product.modelSize && (
+                <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">{product.modelSize}</p>
+              )}
               {error && (
                 <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-red-500">
                   <AlertCircle size={14} /> {error}
@@ -136,14 +147,16 @@ export default function ProductDetails() {
               
               <button 
                 onClick={handleAddToCart} 
-                className="h-14 w-full bg-black text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+                disabled={!product.stock}
+                className="h-14 w-full bg-black text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
               >
                 Add to Cart
               </button>
               
               <button 
                 onClick={handleBuyNow} 
-                className="h-14 w-full border border-black bg-white text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-neutral-50 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-900"
+                disabled={!product.stock}
+                className="h-14 w-full border border-black bg-white text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-900"
               >
                 Buy Now
               </button>
@@ -174,6 +187,22 @@ export default function ProductDetails() {
                   Standard delivery within 2-4 business days. Free returns within 14 days of receipt. All items must be unworn and in original condition.
                 </div>
               </details>
+              {product.material && product.care && (
+                <details className="group">
+                  <summary className="flex cursor-pointer items-center justify-between py-5 text-sm font-bold uppercase tracking-wider text-black dark:text-white transition-colors marker:content-none">
+                    Material & Care
+                    <Plus size={16} className="transition-transform group-open:rotate-45" />
+                  </summary>
+                  <div className="pb-5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 transition-colors">
+                    <p><strong className="font-semibold text-black dark:text-white">Material:</strong> {product.material}</p>
+                    <ul className="mt-4 list-inside list-disc space-y-2">
+                      {product.care.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </details>
+              )}
             </div>
 
           </div>
@@ -181,6 +210,18 @@ export default function ProductDetails() {
       </div>
 
       <SizeChartModal isOpen={showSizeChart} onClose={() => setShowSizeChart(false)} />
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex gap-3 border-t border-neutral-200 bg-white p-4 transition-colors dark:border-neutral-800 dark:bg-neutral-950 lg:hidden">
+        <div className="flex min-w-[105px] items-center justify-center border border-neutral-200 px-3 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          {selectedSize || "Select Size"}
+        </div>
+        <button
+          onClick={handleAddToCart}
+          disabled={!product.stock}
+          className="h-12 flex-1 bg-black text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+        >
+          Add to Cart
+        </button>
+      </div>
     </motion.main>
   );
 }

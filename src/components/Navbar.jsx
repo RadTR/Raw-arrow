@@ -4,7 +4,7 @@ import { Menu, Search, ShoppingBag, Moon, Sun, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
 
-export default function Navbar({ setMenuOpen }) {
+export default function Navbar({ setMenuOpen, setSearchOpen }) {
   const { setCartOpen, cartTotalQty } = useCart();
   const { theme, toggleTheme } = useTheme();
 
@@ -17,18 +17,19 @@ export default function Navbar({ setMenuOpen }) {
           <button className="text-neutral-900 dark:text-white" onClick={() => setMenuOpen(true)}>
             <Menu size={20} strokeWidth={1.5} />
           </button>
-          <button className="text-neutral-900 dark:text-white">
+          <button className="text-neutral-900 dark:text-white" onClick={() => setSearchOpen(true)}>
             <Search size={20} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Desktop Nav (Left) */}
         <nav className="hidden flex-1 items-center gap-6 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 dark:text-neutral-400 lg:flex">
-          <Link to="/#collection" className="hover:text-black dark:hover:text-white transition-colors">Men</Link>
-          <Link to="/#collection" className="hover:text-black dark:hover:text-white transition-colors">Women</Link>
-          <Link to="/#collection" className="text-black dark:text-white hover:text-raw-yellow transition-colors">New Arrivals</Link>
-          <Link to="/#collection" className="hover:text-black dark:hover:text-white transition-colors">Denim</Link>
-          <Link to="/#story" className="hover:text-black dark:hover:text-white transition-colors">Lookbook</Link>
+          <Link to="/men" className="hover:text-black dark:hover:text-white transition-colors">Men</Link>
+          <Link to="/women" className="hover:text-black dark:hover:text-white transition-colors">Women</Link>
+          <Link to="/new-arrivals" className="text-black dark:text-white hover:text-raw-yellow transition-colors">New Arrivals</Link>
+          <Link to="/denim" className="hover:text-black dark:hover:text-white transition-colors">Denim</Link>
+          <Link to="/#categories" className="hover:text-black dark:hover:text-white transition-colors">Categories</Link>
+          <Link to="/stories" className="hover:text-black dark:hover:text-white transition-colors">Lookbook</Link>
         </nav>
         
         {/* Logo (Center) */}
@@ -40,12 +41,12 @@ export default function Navbar({ setMenuOpen }) {
         
         {/* Icons (Right) */}
         <div className="flex flex-1 items-center justify-end gap-5">
-          <button className="hidden text-neutral-900 dark:text-white hover:text-raw-yellow transition-colors lg:block">
+          <button className="hidden text-neutral-900 dark:text-white hover:text-raw-yellow transition-colors lg:block" onClick={() => setSearchOpen(true)}>
             <Search size={20} strokeWidth={1.5} />
           </button>
-          <button className="hidden text-neutral-900 dark:text-white hover:text-raw-yellow transition-colors lg:block">
+          <Link to="/account" className="hidden text-neutral-900 dark:text-white hover:text-raw-yellow transition-colors lg:block">
             <User size={20} strokeWidth={1.5} />
-          </button>
+          </Link>
           <button onClick={toggleTheme} className="text-neutral-900 dark:text-white hover:text-raw-yellow transition-colors">
             {theme === 'light' ? <Moon size={20} strokeWidth={1.5} /> : <Sun size={20} strokeWidth={1.5} />}
           </button>

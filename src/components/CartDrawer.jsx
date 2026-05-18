@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
+import { products } from '../data/products';
 
 export default function CartDrawer() {
   const { cartOpen, setCartOpen, cartItems, updateQuantity, removeFromCart, cartSubtotal } = useCart();
+  const recommended = products.filter((product) => product.trending && product.stock && !cartItems.some((item) => item.product.id === product.id)).slice(0, 2);
 
   return (
     <AnimatePresence>
@@ -37,12 +39,13 @@ export default function CartDrawer() {
               {cartItems.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <p className="font-heading text-sm font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Your bag is empty</p>
-                  <button 
+                  <Link
+                    to="/collection"
                     onClick={() => setCartOpen(false)}
                     className="mt-6 border-b border-black pb-1 text-xs font-bold uppercase tracking-widest text-black dark:border-white dark:text-white transition-colors"
                   >
                     Continue Shopping
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -80,6 +83,7 @@ export default function CartDrawer() {
                             <span className="w-8 text-center text-xs font-semibold text-black dark:text-white transition-colors">{item.quantity}</span>
                             <button 
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              disabled={item.quantity >= 10}
                               className="px-2 py-1.5 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors"
                             >
                               <Plus size={14} />
@@ -89,6 +93,20 @@ export default function CartDrawer() {
                       </div>
                     </div>
                   ))}
+                  {recommended.length > 0 && (
+                    <div className="pt-2">
+                      <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Recommended</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {recommended.map((product) => (
+                          <Link key={product.id} to={`/product/${product.slug}`} onClick={() => setCartOpen(false)} className="group">
+                            <img src={product.image} alt={product.name} className="h-32 w-full object-cover" />
+                            <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-black transition-colors group-hover:text-raw-yellow dark:text-white">{product.name}</p>
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{product.price} TND</p>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -105,11 +123,13 @@ export default function CartDrawer() {
                     <span>Calculated at checkout</span>
                   </div>
                 </div>
-                <button 
-                  className="mt-6 flex h-14 w-full items-center justify-center bg-black text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                >
-                  Checkout
-                </button>
+                <Link to="/checkout" onClick={() => setCartOpen(false)}>
+                  <button 
+                    className="mt-6 flex h-14 w-full items-center justify-center bg-black text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+                  >
+                    Checkout
+                  </button>
+                </Link>
               </div>
             )}
           </motion.aside>
